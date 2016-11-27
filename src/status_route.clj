@@ -1,5 +1,4 @@
 (ns status-route
-
   (:require [clojure.test :refer [function?]]
             [clojure.walk :refer [postwalk]]))
 
@@ -12,5 +11,5 @@
 
 (defn status
   [{:keys [result dependencies]}]
-  (let [result' (apply-result result)]
-    result'))
+
+  (apply-result result))
