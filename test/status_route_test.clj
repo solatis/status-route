@@ -23,8 +23,10 @@
 (def default-endpoint "http://localhost:1337/status")
 
 (deftest first-test
-  (with-server (handler->routes (handler {:status :ok
-                                          :foo (fn [] :bar)})) {:port 1337}
+  (with-server (handler->routes (handler {:result
+                                          {:status :ok
+                                           :foo (fn [] :bar)}
+                                          :dependencies []})) {:port 1337}
 
     (let [result @(http/get default-endpoint
                             {:accept :json

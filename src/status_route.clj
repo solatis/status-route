@@ -11,6 +11,6 @@
                x))))
 
 (defn status
-  [result]
+  [{:keys [result dependencies]}]
   (let [result' (apply-result result)]
     result'))
