@@ -2,6 +2,8 @@
  :source-paths #{"src" "test"}
  :resource-paths #{"src"}
 
+ :watcher-debounce 1000
+
  :dependencies
  '[[adzerk/boot-test "1.1.2" :scope "test"]
    [adzerk/bootlaces "0.1.13" :scope "test"]
@@ -11,7 +13,8 @@
 
    [yada "1.1.44" :scope "test"]
    [bidi "2.0.14" :scope "test"]
-   [aleph "0.4.1"]])
+   [aleph "0.4.1" :exclusions [manifold]]
+   [manifold "0.1.5"]])
 
 (def +version+ "0.1.0")
 (def +project+ 'status-route)

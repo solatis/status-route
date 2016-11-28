@@ -48,4 +48,4 @@
                                  :as :json})]
         (is (= 200 (-> response :status)))
         (is (= {:status "ok"
-                :dependencies [{:foo "http://127.0.0.1:1338/status"}]} (-> response :body)))))))
+                :dependencies [data]} (-> response :body)))))))
