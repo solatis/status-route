@@ -6,31 +6,46 @@
 
             [status-route.yada-adapter :refer [handler]]))
 
-(defmacro with-server
-  [model options & body]
-  `(let [server# (listener ~model ~options)]
+(defn- handler->routes [h]
+  (leaf "/status" h))
+
+(defn- launch-server
+  [{:keys [model opts]}]
+  (-> (listener (handler->routes (handler model)) opts)
+      :close))
+
+(defmacro with-servers
+  [servers & body]
+  `(let [closers# (doall (map launch-server ~servers))]
      (try
        ~@body
        (finally
-         (when-let [close# (-> server# :close)]
-           (println "closing server")
+         (doseq [close# closers#]
            (close#))))))
-
-
-(defn handler->routes [h]
-  (leaf "/status" h))
 
 (def default-endpoint "http://localhost:1337/status")
 
-(deftest first-test
-  (with-server (handler->routes (handler {:result
-                                          {:status :ok
-                                           :foo (fn [] :bar)}
-                                          :dependencies []})) {:port 1337}
+(deftest single-server
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:data data}
+                    :opts {:port 1337}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
 
-    (let [result @(http/get default-endpoint
-                            {:accept :json
-                             :as :json})]
+        (is (= 200 (-> response :status)))
+        (is (= data (-> response :body)))))))
 
-      (println "result = " (pr-str result))
-      (is (= 1 2)))))
+(deftest multi-server
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:data data
+                            :dependencies ["http://127.0.0.1:1338/status"]}
+                    :opts {:port 1337}}
+                   {:model {:data data}
+                    :opts {:port 1338}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
+        (is (= 200 (-> response :status)))
+        (is (= {:status "ok"
+                :dependencies [{:foo "http://127.0.0.1:1338/status"}]} (-> response :body)))))))

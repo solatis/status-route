@@ -10,8 +10,8 @@
    [tolitius/boot-check "0.1.3" :scope "test"]
 
    [yada "1.1.44" :scope "test"]
-   [aleph "0.4.1" :scope "test"]
-   [bidi "2.0.14" :scope "test"]])
+   [bidi "2.0.14" :scope "test"]
+   [aleph "0.4.1"]])
 
 (def +version+ "0.1.0")
 (def +project+ 'status-route)
