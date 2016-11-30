@@ -37,7 +37,7 @@
         (println "single server, body response = " (pr-str (-> response :body)))
 
         (is (= 200 (-> response :status)))
-        (is (= data (-> response :body)))))))
+        (is (= {:single data} (-> response :body)))))))
 
 (deftest multi-server
   (let [data {:status "ok"}]
@@ -54,22 +54,24 @@
         (is (= 200 (-> response :status)))
 
         (println "multi server, body response = " (pr-str (-> response :body)))
-        (is (= {:status "ok"
-                :dependencies [data]} (-> response :body)))))))
+        (is (= {:multi-one {:status "ok"
+                            :dependencies [{:multi-two data}]}} (-> response :body)))))))
 
-;; (deftest recursion-deadlock
-;;   (let [data {:status "ok"}]
-;;     (with-servers [{:model {:id :multi-one
-;;                             :data data
-;;                             :dependencies ["http://127.0.0.1:1338/status?context=wom,bat"]}
-;;                     :opts {:port 1337}}
-;;                    {:model {:id :multi-two
-;;                             :data data}
-;;                     :opts {:port 1338}}]
-;;       (let [response @(http/get default-endpoint
-;;                                 {:accept :json
-;;                                  :as :json})]
+(deftest recursion-deadlock
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:id :multi-one
+                            :data data
+                            :dependencies ["http://127.0.0.1:1338/status?context=wom,bat"]}
+                    :opts {:port 1337}}
+                   {:model {:id :multi-two
+                            :data data
+                            :dependencies ["http://127.0.0.1:1337/status?context=wom,bat"]}
+                    :opts {:port 1338}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
 
-;;         (is (= 200 (-> response :status)))
-;;         (is (= {:status "ok"
-;;                 :dependencies [data]} (-> response :body)))))))
+        (is (= 200 (-> response :status)))
+        (is (= {:multi-one {:status "ok"
+                            :dependencies [{:multi-two {:status "ok"
+                                                        :dependencies [{:multi-one {:status "ok"}}]}}]}} (-> response :body)))))))

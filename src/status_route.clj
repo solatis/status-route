@@ -26,7 +26,7 @@
 
   (let [dependency-context (-> (parse-context (get query "context"))
                                (merge-context self-context)
-                               (conj (name self-id)))]
+                               (conj self-id))]
     (println "dependency-context = " (pr-str dependency-context))
     (->> (str/join "," dependency-context)
          (assoc query "context"))))
@@ -56,9 +56,18 @@
 (defn- status-
   [{:keys [id data dependencies]} context]
 
-  (merge {id data}
-         (when (seq dependencies)
-           {:dependencies @(apply d/zip (map (partial resolve-dependency- id context) dependencies))})))
+  (let [self-id (name id)]
+    (println "status-, self-id = " (pr-str self-id))
+    (println "status-, context = " (pr-str context))
+    (println "status-, contains? = " (pr-str (some #(= self-id %) context)))
+
+    {id (merge data
+               (when (and (seq dependencies)
+                          (not (some #(= self-id %) context)))
+                 {:dependencies @(apply d/zip (map (partial resolve-dependency-
+                                                            self-id
+                                                            context)
+                                                   dependencies))}))}))
 
 (defn status
   [args context]
