@@ -27,7 +27,6 @@
   (let [dependency-context (-> (parse-context (get query "context"))
                                (merge-context self-context)
                                (conj self-id))]
-    (println "dependency-context = " (pr-str dependency-context))
     (->> (str/join "," dependency-context)
          (assoc query "context"))))
 
@@ -43,10 +42,6 @@
 (defn- resolve-dependency-
   [self-id context url]
 
-  (println "self-id = " (pr-str self-id))
-  (println "parent-context = " (pr-str context))
-  (println "url = " (pr-str url))
-
   (d/chain
    (http/get (build-dependency-url- self-id context url)
              {:accept :json
@@ -57,10 +52,6 @@
   [{:keys [id data dependencies]} context]
 
   (let [self-id (name id)]
-    (println "status-, self-id = " (pr-str self-id))
-    (println "status-, context = " (pr-str context))
-    (println "status-, contains? = " (pr-str (some #(= self-id %) context)))
-
     {id (merge data
                (when (and (seq dependencies)
                           (not (some #(= self-id %) context)))

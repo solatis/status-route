@@ -33,9 +33,6 @@
       (let [response @(http/get default-endpoint
                                 {:accept :json
                                  :as :json})]
-
-        (println "single server, body response = " (pr-str (-> response :body)))
-
         (is (= 200 (-> response :status)))
         (is (= {:single data} (-> response :body)))))))
 
@@ -52,8 +49,6 @@
                                 {:accept :json
                                  :as :json})]
         (is (= 200 (-> response :status)))
-
-        (println "multi server, body response = " (pr-str (-> response :body)))
         (is (= {:multi-one {:status "ok"
                             :dependencies [{:multi-two data}]}} (-> response :body)))))))
 
