@@ -23,29 +23,53 @@
          (doseq [close# closers#]
            (close#))))))
 
-(def default-endpoint "http://localhost:1337/status")
+(def default-endpoint "http://localhost:1337/status?context=foo,bar")
 
 (deftest single-server
   (let [data {:status "ok"}]
-    (with-servers [{:model {:data data}
+    (with-servers [{:model {:id :single
+                            :data data}
                     :opts {:port 1337}}]
       (let [response @(http/get default-endpoint
                                 {:accept :json
                                  :as :json})]
+
+        (println "single server, body response = " (pr-str (-> response :body)))
 
         (is (= 200 (-> response :status)))
         (is (= data (-> response :body)))))))
 
 (deftest multi-server
   (let [data {:status "ok"}]
-    (with-servers [{:model {:data data
-                            :dependencies ["http://127.0.0.1:1338/status"]}
+    (with-servers [{:model {:id :multi-one
+                            :data data
+                            :dependencies ["http://127.0.0.1:1338/status?context=wom,bat"]}
                     :opts {:port 1337}}
-                   {:model {:data data}
+                   {:model {:id :multi-two
+                            :data data}
                     :opts {:port 1338}}]
       (let [response @(http/get default-endpoint
                                 {:accept :json
                                  :as :json})]
         (is (= 200 (-> response :status)))
+
+        (println "multi server, body response = " (pr-str (-> response :body)))
         (is (= {:status "ok"
                 :dependencies [data]} (-> response :body)))))))
+
+;; (deftest recursion-deadlock
+;;   (let [data {:status "ok"}]
+;;     (with-servers [{:model {:id :multi-one
+;;                             :data data
+;;                             :dependencies ["http://127.0.0.1:1338/status?context=wom,bat"]}
+;;                     :opts {:port 1337}}
+;;                    {:model {:id :multi-two
+;;                             :data data}
+;;                     :opts {:port 1338}}]
+;;       (let [response @(http/get default-endpoint
+;;                                 {:accept :json
+;;                                  :as :json})]
+
+;;         (is (= 200 (-> response :status)))
+;;         (is (= {:status "ok"
+;;                 :dependencies [data]} (-> response :body)))))))
