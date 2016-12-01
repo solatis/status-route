@@ -23,7 +23,7 @@
          (doseq [close# closers#]
            (close#))))))
 
-(def default-endpoint "http://localhost:1337/status?context=foo,bar")
+(def default-endpoint "http://localhost:1337/status")
 
 (deftest single-server
   (let [data {:status "ok"}]
