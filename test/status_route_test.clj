@@ -36,11 +36,48 @@
         (is (= 200 (-> response :status)))
         (is (= {:single data} (-> response :body)))))))
 
+(deftest default-values
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:data data}
+                    :opts {:port 1337}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
+        (is (= 200 (-> response :status)))
+        (is (= {:default data} (-> response :body)))))))
+
+(deftest function-as-data
+  (let [data (fn [] {:status "ok"})]
+    (with-servers [{:model {:data data}
+                    :opts {:port 1337}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
+        (is (= 200 (-> response :status)))
+        (is (= {:default {:status "ok"}} (-> response :body)))))))
+
 (deftest multi-server
   (let [data {:status "ok"}]
     (with-servers [{:model {:id :multi-one
                             :data data
-                            :dependencies ["http://127.0.0.1:1338/status?context=wom,bat"]}
+                            :dependencies ["http://127.0.0.1:1338/status"]}
+                    :opts {:port 1337}}
+                   {:model {:id :multi-two
+                            :data data}
+                    :opts {:port 1338}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
+        (is (= 200 (-> response :status)))
+        (is (= {:multi-one {:status "ok"
+                            :dependencies [{:multi-two data}]}} (-> response :body)))))))
+
+(deftest dynamic-dependencies
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:id :multi-one
+                            :data data
+                            :dependencies (fn []
+                                            ["http://127.0.0.1:1338/status"])}
                     :opts {:port 1337}}
                    {:model {:id :multi-two
                             :data data}
@@ -56,11 +93,11 @@
   (let [data {:status "ok"}]
     (with-servers [{:model {:id :multi-one
                             :data data
-                            :dependencies ["http://127.0.0.1:1338/status?context=wom,bat"]}
+                            :dependencies ["http://127.0.0.1:1338/status"]}
                     :opts {:port 1337}}
                    {:model {:id :multi-two
                             :data data
-                            :dependencies ["http://127.0.0.1:1337/status?context=wom,bat"]}
+                            :dependencies ["http://127.0.0.1:1337/status"]}
                     :opts {:port 1338}}]
       (let [response @(http/get default-endpoint
                                 {:accept :json

@@ -24,7 +24,7 @@
 (defn- build-dependency-query-
   [self-id self-context query]
 
-  (let [dependency-context (-> (parse-context (get query "context"))
+  (let [dependency-context (-> (parse-context (get query "context" ""))
                                (merge-context self-context)
                                (conj self-id))]
     (->> (str/join "," dependency-context)
@@ -49,16 +49,21 @@
    :body))
 
 (defn- status-
-  [{:keys [id data dependencies]} context]
+  [{:keys [id dependencies deep? data]
+    :or {id :default
+         dependencies []
+         deep? true
+         data {}}} context]
 
   (let [self-id (name id)]
     {id (merge data
                (when (and (seq dependencies)
                           (not (some #(= self-id %) context)))
-                 {:dependencies @(apply d/zip (map (partial resolve-dependency-
-                                                            self-id
-                                                            context)
-                                                   dependencies))}))}))
+                 {:dependencies @(apply d/zip
+                                        (map (partial resolve-dependency-
+                                                      self-id
+                                                      context)
+                                             dependencies))}))}))
 
 (defn status
   [args context]
