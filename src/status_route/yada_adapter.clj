@@ -11,6 +11,6 @@
     :produces #{"application/edn;q=0.9"
                 "application/json;q=0.8"
                 "application/transit+json;q=0.7"}
-    :methods {:get {:response (fn [{{:keys [query]} :parameters}]
-                                (println "incoming yada query: " (pr-str query))
-                                (status args (get query "context")))}}}))
+    :methods {:get {:response (fn [{{:keys [query]
+                                    :or {query {}}} :parameters}]
+                                (status args (get query "context" "")))}}}))
