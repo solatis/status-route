@@ -107,3 +107,50 @@
         (is (= {:multi-one {:status "ok"
                             :dependencies [{:multi-two {:status "ok"
                                                         :dependencies [{:multi-one {:status "ok"}}]}}]}} (-> response :body)))))))
+
+
+(deftest deep-dependencies
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:id :multi-one
+                            :data data
+                            :dependencies ["http://127.0.0.1:1338/status"]}
+                    :opts {:port 1337}}
+                   {:model {:id :multi-two
+                            :data data
+                            :dependencies ["http://127.0.0.1:1339/status"]}
+                    :opts {:port 1338}}
+                   {:model {:id :multi-three
+                            :data data}
+                    :opts {:port 1339}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
+
+        (is (= 200 (-> response :status)))
+        (is (= {:multi-one {:status "ok"
+                            :dependencies [{:multi-two {:status "ok"
+                                                        :dependencies [{:multi-three {:status "ok"}}]}}]}} (-> response :body)))))))
+
+(deftest undeep-dependencies
+  (let [data {:status "ok"}]
+    (with-servers [{:model {:id :multi-one
+                            :data data
+                            :dependencies ["http://127.0.0.1:1338/status"]
+                            :deep? false}
+                    :opts {:port 1337}}
+                   {:model {:id :multi-two
+                            :data data
+                            :dependencies ["http://127.0.0.1:1339/status"]
+                            :deep? false}
+                    :opts {:port 1338}}
+                   {:model {:id :multi-three
+                            :data data
+                            :deep? false}
+                    :opts {:port 1339}}]
+      (let [response @(http/get default-endpoint
+                                {:accept :json
+                                 :as :json})]
+
+        (is (= 200 (-> response :status)))
+        (is (= {:multi-one {:status "ok"
+                            :dependencies [{:multi-two {:status "ok"}}]}} (-> response :body)))))))

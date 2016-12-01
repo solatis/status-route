@@ -12,7 +12,9 @@
            (partial #(if (function? %1) (%1) %1))))
 
 (defn parse-context [context]
-  (str/split context #","))
+  (if (str/blank? context)
+    []
+    (str/split context #",")))
 
 (defn merge-context [a b]
   (let [a' (if (coll? a) a [a])
@@ -57,8 +59,19 @@
 
   (let [self-id (name id)]
     {id (merge data
-               (when (and (seq dependencies)
-                          (not (some #(= self-id %) context)))
+               (when (and
+
+                      ;; We actually have dependencies
+                      (seq dependencies)
+
+                      ;; Prevent infinite recursion deadlock by checking we
+                      ;; do not see ourselves in our context
+                      (not (some #(= self-id %) context))
+
+                      ;; And in case somebody do not wants a deep-search, limit
+                      ;; our search depth to just one dependency level.
+                      (or (= true deep?)
+                          (< (count context) 1)))
                  {:dependencies @(apply d/zip
                                         (map (partial resolve-dependency-
                                                       self-id
