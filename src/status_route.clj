@@ -55,9 +55,12 @@
     :or {id :default
          dependencies []
          deep? true
-         data {}}} context]
+         data {}}}
+   {:keys [context]
+    :or {context ""}}]
 
-  (let [self-id (name id)]
+  (let [self-id (name id)
+        context' (parse-context context)]
     {id (merge data
                (when (and
 
@@ -66,18 +69,18 @@
 
                       ;; Prevent infinite recursion deadlock by checking we
                       ;; do not see ourselves in our context
-                      (not (some #(= self-id %) context))
+                      (not (some #(= self-id %) context'))
 
                       ;; And in case somebody do not wants a deep-search, limit
                       ;; our search depth to just one dependency level.
                       (or (= true deep?)
-                          (< (count context) 1)))
+                          (< (count context') 1)))
                  {:dependencies @(apply d/zip
                                         (map (partial resolve-dependency-
                                                       self-id
-                                                      context)
+                                                      context')
                                              dependencies))}))}))
 
 (defn status
-  [args context]
-  (status- (apply-functions args) (parse-context context)))
+  [args query]
+  (status- (apply-functions args) query))
