@@ -4,8 +4,6 @@
             [bidi.verbose :refer [leaf]]
             [aleph.http :as http]
 
-
-
             [status-route.yada-adapter :refer [handler]]))
 
 (defn- handler->routes [h]
