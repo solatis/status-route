@@ -34,7 +34,10 @@
 
 (task-options!
  pom {:project +project+
-      :version +version+}
+      :version +version+
+      :description    "Status route aggregation and reporting for microservices"
+      :url            "https://github.com/solatis/status-route"
+      :scm            {:url "https://github.com/solatis/status-route"}}
  push {:repo "clojars"})
 
 (bootlaces! +version+)
