@@ -1,4 +1,4 @@
-(ns status-route.yada-adapter
+(ns status-route.yada
   (:require [yada.yada :as yada]
             [status-route :refer [status]]))
 
