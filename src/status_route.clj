@@ -12,7 +12,8 @@
            (partial #(if (function? %1) (%1) %1))))
 
 (defn parse-context [context]
-  (if (str/blank? context)
+  (if (or (nil? context)
+          (str/blank? context))
     []
     (str/split context #",")))
 
@@ -24,28 +25,31 @@
         (set))))
 
 (defn- build-dependency-query-
-  [self-id self-context query]
+  [self-id self-context self-depth query]
 
   (let [dependency-context (-> (parse-context (get query "context" ""))
                                (merge-context self-context)
                                (conj self-id))]
-    (->> (str/join "," dependency-context)
-         (assoc query "context"))))
+
+    (-> query
+        (assoc "context" (str/join "," dependency-context))
+        (cond-> self-depth (assoc "depth" self-depth)))))
+
+
 
 (defn- build-dependency-url-
-  [self-id self-context base-url]
+  [self-id self-context self-depth base-url]
 
   (-> (update-in (c/url base-url)
                  [:query]
-                 (partial build-dependency-query- self-id self-context))
-
+                 (partial build-dependency-query- self-id self-context self-depth))
       (str)))
 
 (defn- resolve-dependency-
-  [self-id context url]
+  [self-id context depth url]
 
   (d/chain
-   (http/get (build-dependency-url- self-id context url)
+   (http/get (build-dependency-url- self-id context depth url)
              {:accept :json
               :as :json})
    :body))
@@ -54,16 +58,15 @@
   [{:keys [id dependencies deep? data]
     :or {id :default
          dependencies []
-         deep? true
          data {}}}
-   {:keys [context]
+   {:keys [context
+           depth]
     :or {context ""}}]
 
   (let [self-id (name id)
         context' (parse-context context)]
     {id (merge data
                (when (and
-
                       ;; We actually have dependencies
                       (seq dependencies)
 
@@ -73,12 +76,13 @@
 
                       ;; And in case somebody do not wants a deep-search, limit
                       ;; our search depth to just one dependency level.
-                      (or (= true deep?)
-                          (< (count context') 1)))
+                      (or (nil? depth)
+                          (< (count context') (read-string depth))))
                  {:dependencies @(apply d/zip
                                         (map (partial resolve-dependency-
                                                       self-id
-                                                      context')
+                                                      context'
+                                                      depth)
                                              dependencies))}))}))
 
 (defn status

@@ -4,6 +4,8 @@
             [bidi.verbose :refer [leaf]]
             [aleph.http :as http]
 
+
+
             [status-route.yada-adapter :refer [handler]]))
 
 (defn- handler->routes [h]
@@ -147,7 +149,8 @@
                             :data data
                             :deep? false}
                     :opts {:port 1339}}]
-      (let [response @(http/get default-endpoint
+
+      (let [response @(http/get (str default-endpoint "?depth=1")
                                 {:accept :json
                                  :as :json})]
 

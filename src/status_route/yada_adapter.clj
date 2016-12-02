@@ -13,4 +13,6 @@
                 "application/transit+json;q=0.7"}
     :methods {:get {:response (fn [{{:keys [query]
                                     :or {query {}}} :parameters}]
-                                (status args {:context (get query "context")}))}}}))
+
+                                (status args {:context (get query "context")
+                                              :depth (get query "depth")}))}}}))
