@@ -18,7 +18,7 @@
    [ring/ring-jetty-adapter "1.5.0" :scope "test"]
    [javax.servlet/servlet-api "2.5" :scope "test"]
    [compojure "1.5.1" :scope "test"]
-   [ring/ring-json "0.4.0"]
+   [ring/ring-json "0.4.0" :scope "test"]
    [metosin/compojure-api "1.1.4" :scope "test"]
 
    ;; Actual real dependencies
@@ -26,7 +26,7 @@
    [aleph "0.4.1" :exclusions [manifold]]
    [com.cemerick/url "0.1.1"]])
 
-(def +version+ "1.2.0")
+(def +version+ "1.2.1")
 (def +project+ 'status-route)
 
 (require '[adzerk.boot-test :refer :all]
