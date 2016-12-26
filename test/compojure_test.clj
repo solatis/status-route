@@ -1,18 +1,26 @@
-(ns status-route-test
+(ns compojure-test
   (:require [clojure.test :refer :all]
-            [yada.yada :refer [listener]]
-            [bidi.verbose :refer [leaf]]
-            [aleph.http :as http]
 
-            [status-route.yada :refer [handler]]))
+            [ring.middleware.params :refer [wrap-params]]
+            [ring.middleware.json :refer [wrap-json-response]]
+            [ring.adapter.jetty :refer [run-jetty]]
+            [compojure.api.sweet :refer [context]]
+
+            [aleph.http :as http]
+            [status-route.compojure :refer [handler]]))
 
 (defn- handler->routes [h]
-  (leaf "/status" h))
+  (context "/status" [] h))
 
 (defn- launch-server
   [{:keys [model opts]}]
-  (-> (listener (handler->routes (handler model)) opts)
-      :close))
+  (let [server (run-jetty (-> (handler->routes (handler model))
+                              wrap-params
+                              wrap-json-response)
+                          (merge {:join? false}
+                                 opts))]
+    (fn []
+      (.stop server))))
 
 (defmacro with-servers
   [servers & body]
