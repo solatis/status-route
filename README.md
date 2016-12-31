@@ -14,6 +14,24 @@ Notable features:
  * Ability to detect and prevent "infinite recursion"
  * Flexibly restrict the depth you want to query using a query parameter
 
-## Ring adapter
+## Compojure adapter
+
+```clojure
+(ns my-status-routes
+  (:require [compojure.api.sweet :refer [defroutes context]]
+            [clj-time.core :as    t]
+            [clj-time.coerce :as    c]
+            [status-route.compojure :refer [handler]]))
+
+(def start (t/now))
+
+(defroutes status-routes
+  (context "/status" [] (handler {:id :my-service
+                                  :data {:status :ok
+                                         :uptime (-> start
+                                                     (t/interval (t/now))
+                                                     (t/in-seconds))
+                                         :dependencies ["http://my-child-service/status"]}))))
+```
 
 ## Yada adapter
