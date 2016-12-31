@@ -15,6 +15,7 @@
    ;; Needed for test cases
    [yada "1.1.46" :scope "test"]
 
+   [metosin/ring-swagger "0.22.12" :scope "test"]
    [ring/ring-jetty-adapter "1.5.0" :scope "test"]
    [javax.servlet/servlet-api "2.5" :scope "test"]
    [compojure "1.5.1" :scope "test"]
@@ -23,7 +24,7 @@
 
    ;; Actual real dependencies
    [manifold "0.1.5"]
-   [aleph "0.4.1" :exclusions [manifold]]
+   [aleph "0.4.2-alpha10" :exclusions [manifold]]
    [com.cemerick/url "0.1.1"]])
 
 (def +version+ "1.2.1")
