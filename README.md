@@ -19,8 +19,8 @@ Notable features:
 ```clojure
 (ns my-status-routes
   (:require [compojure.api.sweet :refer [defroutes context]]
-            [clj-time.core :as    t]
-            [clj-time.coerce :as    c]
+            [clj-time.core :as t]
+            [clj-time.coerce :as c]
             [status-route.compojure :refer [handler]]))
 
 (def start (t/now))
