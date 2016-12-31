@@ -42,7 +42,10 @@
 
   (-> (update-in (c/url base-url)
                  [:query]
-                 (partial build-dependency-query- self-id self-context self-depth))
+                 (partial build-dependency-query-
+                          self-id
+                          self-context
+                          self-depth))
       (str)))
 
 (defn- resolve-dependency-

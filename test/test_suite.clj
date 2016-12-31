@@ -68,7 +68,8 @@
                                  :as :json})]
         (is (= 200 (-> response :status)))
         (is (= {:multi-one {:status "ok"
-                            :dependencies [{:multi-two data}]}} (-> response :body)))))))
+                            :dependencies [{:multi-two data}]}}
+               (-> response :body)))))))
 
 (defn dynamic-dependencies [launch-server]
   (let [data {:status "ok"}]
@@ -76,8 +77,9 @@
       launch-server
       [{:model {:id :multi-one
                 :data data
-                :dependencies (fn []
-                                ["http://127.0.0.1:1338/status"])}
+                :dependencies
+                (fn []
+                  ["http://127.0.0.1:1338/status"])}
         :opts {:port 1337}}
        {:model {:id :multi-two
                 :data data}
@@ -87,7 +89,8 @@
                                  :as :json})]
         (is (= 200 (-> response :status)))
         (is (= {:multi-one {:status "ok"
-                            :dependencies [{:multi-two data}]}} (-> response :body)))))))
+                            :dependencies [{:multi-two data}]}}
+               (-> response :body)))))))
 
 (defn recursion-deadlock [launch-server]
   (let [data {:status "ok"}]
@@ -107,8 +110,12 @@
 
         (is (= 200 (-> response :status)))
         (is (= {:multi-one {:status "ok"
-                            :dependencies [{:multi-two {:status "ok"
-                                                        :dependencies [{:multi-one {:status "ok"}}]}}]}} (-> response :body)))))))
+                            :dependencies
+                            [{:multi-two
+                              {:status "ok"
+                               :dependencies
+                               [{:multi-one {:status "ok"}}]}}]}}
+               (-> response :body)))))))
 
 
 (defn deep-dependencies [launch-server]
@@ -132,8 +139,11 @@
 
         (is (= 200 (-> response :status)))
         (is (= {:multi-one {:status "ok"
-                            :dependencies [{:multi-two {:status "ok"
-                                                        :dependencies [{:multi-three {:status "ok"}}]}}]}} (-> response :body)))))))
+                            :dependencies
+                            [{:multi-two {:status "ok"
+                                          :dependencies
+                                          [{:multi-three {:status "ok"}}]}}]}}
+               (-> response :body)))))))
 
 (defn undeep-dependencies [launch-server]
   (let [data {:status "ok"}]
@@ -160,4 +170,6 @@
 
         (is (= 200 (-> response :status)))
         (is (= {:multi-one {:status "ok"
-                            :dependencies [{:multi-two {:status "ok"}}]}} (-> response :body)))))))
+                            :dependencies
+                            [{:multi-two {:status "ok"}}]}}
+               (-> response :body)))))))
